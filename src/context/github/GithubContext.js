@@ -1,23 +1,38 @@
-import { createContext, useState} from "react";
+import { createContext, useReducer } from 'react'
+import githubReducer from './GithubReducer'
 
-const GithubContext = createContext();
+const GithubContext = createContext()
 
-const GITHUBURL = `https://api.github.com`;
+const GITHUB_URL = `https://api.github.com`
 
+export const GithubProvider = ({ children }) => {
+  const initialState = {
+    users: [],
+    loading: false,
+  }
 
-export const GithubProvider = ({children}) =>{
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const [state, dispatch] = useReducer(githubReducer, initialState)
 
-      const fetchUsers = async () =>{
-        const response = await fetch( `${GITHUBURL}/users`)
-        const data = await response.json();
-        setUsers(data);
-        setLoading(false);
-      }
-      return <GithubContext.Provider value={{users, loading, fetchUsers}}>
-        {children}
-      </GithubContext.Provider>
+  const fetchUsers = async () => {
+    const response = await fetch( `${GITHUB_URL}/users`)
+    const data = await response.json()
+
+    dispatch({
+      type: 'GET_USERS',
+      payload: data,
+    })
+  }
+
+  return (
+    <GithubContext.Provider
+      value={{
+        users: state.users,
+        loading: state.loading,
+        fetchUsers,
+      }}
+    >
+          {children}
+    </GithubContext.Provider>
+  )
 }
-
-export default GithubContext;
+export default GithubContext
