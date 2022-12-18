@@ -8,11 +8,13 @@ const GITHUB_URL = `https://api.github.com`
 export const GithubProvider = ({ children }) => {
   const initialState = {
     users: [],
+    user:{},
     loading: false,
   }
 
   const [state, dispatch] = useReducer(githubReducer, initialState)
 
+  // search results
   const searchUsers = async (text) => {
     setLoading();
 
@@ -29,6 +31,27 @@ export const GithubProvider = ({ children }) => {
     })
   }
 
+
+//get single user
+  const getUser = async (login) => {
+    setLoading();
+
+    const response = await fetch( `${GITHUB_URL}/users/${login}`)
+    
+    if(response.status === 404){
+      window.location.href = "/notfound"
+    }
+    else{
+      const data = await response.json();
+      dispatch({
+        type: 'GET_USER',
+        payload: data,
+      })
+    }
+   
+  }
+
+
 // clear users from state
 const clearUsers = () => dispatch ({type: "CLEAR_USERS"})
 
@@ -39,7 +62,9 @@ const setLoading = () =>  dispatch({type: 'SET_LOADING'})
       value={{
         users: state.users,
         loading: state.loading,
+        user: state.user,
         searchUsers,
+        getUser,
         clearUsers,
       }}
     >
